@@ -85,9 +85,19 @@ int main(int argc, char *argv[]) {
 	
 	int dev_fd = open(device, O_RDONLY);
 
-	if (dev_fd) {
-		while (read_event(dev_fd)) {};
+	if (!dev_fd) {
+		fprintf(stderr, "Unable to open device\n");
+		return EXIT_FAILURE;
 	}
+	/*
+	 * get exclusive access to the device
+	 */
+	if (ioctl(dev_fd, EVIOCGRAB, 1) == -1) {
+		fprintf(stderr, "Unable to grab device exclusively\n");
+		return EXIT_FAILURE;
+	}
+
+	while (read_event(dev_fd));
 	close(dev_fd);
 
 	return EXIT_SUCCESS;
